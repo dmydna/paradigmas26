@@ -1,0 +1,110 @@
+Se pide demostrar:
+∀n, m :: Int, n, m > 0. ∀x :: Doc. indentar n (indentar m x) = indentar (n + m) x
+
+Para eso primero demostramos los siguientes lemas para poder utilizarlos:
+
+1. indentar k Vacio = Vacio para todo k :: Int positivo.
+2. indentar k (Texto s d) = Texto s (indentar k d) para todo k :: Int positivo, s :: String y d :: Doc.
+3. indentar m (Linea k d) = Linea (m + k) (indentar m d) para todo m, k :: Int positivos y d :: Doc.
+
+1. Demostramos:
+∀k :: Int, k > 0. indentar k Vacio = Vacio
+
+                  indentar k Vacio
+{Def. indentar} = foldDoc Texto (\l d -> Linea (l + k) d) vacio Vacio
+{Def. foldDoc}  = vacio
+{Def. vacio}    = Vacio
+
+Entonces, ∀k :: Int, k > 0. indentar k Vacio = Vacio
+
+2. Demostramos:
+∀k :: Int, k > 0. ∀s :: String. ∀d :: Doc. indentar k (Texto s d) = Texto s (indentar k d)
+
+                  indentar k (Texto s d)
+{Def. indentar} = foldDoc Texto (\l d' -> Linea (l + k) d') vacio (Texto s d)
+{Def. foldDoc}  = Texto s (foldDoc Texto (\l d' -> Linea (l + k) d') vacio d)
+{Def. indentar} = Texto s (indentar k d)
+
+Entonces, ∀k :: Int, k > 0. ∀s :: String. ∀d :: Doc. indentar k (Texto s d) = Texto s (indentar k d)
+
+3. Demostramos:
+∀m, k :: Int, m, k > 0. ∀d :: Doc. indentar m (Linea k d) = Linea (m + k) (indentar m d)
+
+                  indentar m (Linea k d)
+{Def. indentar} = foldDoc Texto (\l d' -> Linea (l + m) d') vacio (Linea k d)
+{Def. foldDoc}  = (\l d' -> Linea (l + m) d') k (foldDoc Texto (\l d' -> Linea (l + m) d') vacio d)
+{Def. indentar} = (\l d' -> Linea (l + m) d') k (indentar m d)
+{Beta}          = (\d' -> Linea (k + m) d') (indentar m d)
+{Beta}          = Linea (k + m) (indentar m d)
+
+Entonces, ∀m, k :: Int, m, k > 0. ∀d :: Doc. indentar m (Linea k d) = Linea (m + k) (indentar m d)
+
+Ya demostrados los lemas, seguimos con la demostración principal:
+∀n, m :: Int, n, m > 0. ∀x :: Doc. indentar n (indentar m x) = indentar (n + m) x
+
+Como Doc es:
+data Doc
+  = Vacio
+  | Texto String Doc
+  | Linea Int Doc
+
+Por principio de inducción estructural, sea P una propiedad sobre el tipo Doc:
+1. Si P vale sobre Vacio.
+2. Si P vale sobre Texto.
+3. Si P vale sobre Linea.
+Entonces, ∀x :: Doc. P(x)
+
+En esta demostración, P(x) := ∀n, m :: Int, n, m > 0. indentar n (indentar m x) = indentar (n + m) x
+
+Veamos cada caso.
+
+Caso 1: x = Vacio
+
+           indentar n (indentar m x)
+{Def. x} = indentar n (indentar m Vacio)
+{Lema 1} = indentar n Vacio
+{Lema 1} = Vacio
+{Lema 1} = indentar (n + m) Vacio
+{Def. x} = indentar (n + m) x
+
+Vale el primer caso.
+
+Caso 2:
+Como Texto es un constructor recursivo, por inducción basta ver:
+∀d :: Doc. ∀s :: String. (P(d) => P(Texto s d))
+
+con P(d)         := ∀n, m :: Int, n, m > 0. indentar n (indentar m d)           = indentar (n + m) d
+    P(Texto s d) := ∀n, m :: Int, n, m > 0. indentar n (indentar m (Texto s d)) = indentar (n + m) (Texto s d)
+    HI := P(d)
+
+           indentar n (indentar m (Texto s d))
+{Lema 2} = indentar n (Texto s (indentar m d))
+{Lema 2} = Texto s (indentar n (indentar m d))
+{Por HI} = Texto s (indentar (n + m) d)
+{Lema 2} = indentar (n + m) (Texto s d)
+
+Entonces, ∀d :: Doc. ∀s :: String. (P(d) => P(Texto s d))
+Vale el segundo caso.
+
+Caso 3:
+Como Linea es un constructor recursivo, por inducción basta ver:
+∀d :: Doc. ∀k :: Int. (P(d) => P(Linea k d))
+
+con P(d)         := ∀n, m :: Int, n, m > 0. indentar n (indentar m d)           = indentar (n + m) d
+    P(Linea k d) := ∀n, m :: Int, n, m > 0. indentar n (indentar m (Linea k d)) = indentar (n + m) (Linea k d)
+    HI := P(d)
+
+           indentar n (indentar m (Linea k d))
+{Lema 3} = indentar n (Linea (m + k) (indentar m d))
+{Lema 3} = Linea (n + (m + k)) (indentar n (indentar m d))
+{Por HI} = Linea (n + (m + k)) (indentar (n + m) d)
+{*Int}   = Linea ((n + m) + k) (indentar (n + m) d)
+{Lema 3} = indentar (n + m) (Linea k d)
+
+*Int: Asociatividad de la suma del tipo Int
+
+Entonces, ∀d :: Doc. ∀k :: Int. (P(d) => P(Linea k d))
+Vale el tercer caso.
+
+Finalmente, como valen los tres casos, ∀x :: Doc. P(x), por lo que concluimos que:
+∀n, m :: Int, n, m > 0. ∀x :: Doc. indentar n (indentar m x) = indentar (n + m) x

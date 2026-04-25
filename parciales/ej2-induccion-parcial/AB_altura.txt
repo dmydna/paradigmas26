@@ -1,0 +1,101 @@
+data AB a = Nil | Bin (AB a) a (AB a)
+
+Demostrar
+∀t:: AB a. ∀u :: AB a. altura t ≥ altura (zipAB t u)
+
+Defino P(t) = ∀u :: AB a. altura t ≥ altura (zipAB t u)
+
+
+-- Solucion
+
+Por induccion estructural sobre (AB a) si vale;
+   1. P(Nil) 
+   2. ∀i,d :: AB a.  ∀r :: a.  P(i) y  P(d) => P(Bin i r d)
+Entonces vale ∀t :: AIH a . P(t)
+
+1. Caso Base
+----------------
+P(Nil)  = altura Nil ≥ altura (zipAB Nil u)
+
+  :: Por extensionalidad sobre u  
+       si u:: AB a, entonces:
+       o bien  ∃u :: a. u = Nil 
+       o bien  ∃ri,rd :: AB a .∃rx :: a . u = Bin ri rx rd
+
+       Caso 1.  u = Nil  
+       ------------------
+        altura Nil ≥ altura (zipAB Nil Nil)
+        0 ≥ altura (const Nil Nil)
+        0 ≥ altura (Nil)
+        0 ≥ 0
+
+        Luego queda demostrado:
+        P(t=Nil) para u = Nil
+
+
+       Caso 2.  u = (Bin ri rx rd)  
+       -----------------------------
+        altura Nil ≥ altura (zipAB Nil (Bin ri rx rd))
+        altura Nil ≥ altura (const Nil (Bin ri rx rd))
+        altura Nil ≥ altura (Nil)
+
+
+        Luego queda demostrado:
+        P(t=Nil) para u = (Bin ri rx rd)
+
+
+2. Caso Inductivo
+------------------
+
+∀i,r :: AB a. ∀r :: a. P(i) ∧ P(d) ⇒ P(Bin i r d) 
+  H1 :=  P(i) ∧ P(d) 
+  1. P(i) = altura i ≥ altura (zipAB i u)
+  2. P(d) = altura d ≥ altura (zipAB d u)
+
+P(Bin i r d) = altura (Bin i r d) ≥ altura (zipAB (Bin i r d) u)
+
+  :: Por extensionalidad  sobre u  
+       si u:: AB a, entonces:
+       o bien  ∃ u :: a. u = Nil 
+       o bien  ∃ i, d :: AB a. ∃r :: AB a . u = Bin i r d
+
+       Caso 1.  u = Nil  
+       ------------------
+        altura (Bin ri rx rd) ≥  altura (zipAB (Bin i r d) Nil)
+        1 + max (altura i) (altura d) ≥  altura (Nil)
+        1 + max (altura i) (altura d) ≥  0
+
+        Luego, tenemos 3 casos: 
+        1. altura(i) != nil ∧ (altura d)  = Nil 
+           1 + max (altura i) 0  ≥  0
+        2. altura(i)  = nil ∧ (altura d) != Nil
+           1 + max 0 (altura d)  ≥  0
+        3. altura(i)  = nil ∧ (altura d) != Nil
+           1 + max 0 0  ≥  0
+
+        Luego en cualquier caso se cumple.
+
+
+       Caso 1.  u = (Bin i r d)  
+       --------------------------
+        altura (Bin i r d)               ≥ altura (zipAB (Bin i r d) (Bin I R D))
+        1 + max (altura i) (altura d)    ≥ altura (zipAB (Bin i r d) (Bin I R D))
+        1 + max (altura i) (altura d)    ≥ altura ( Bin (zipAB i I)  (R r) (zipAB d D) )
+        1 + max (altura i) (altura d)    ≥ 1 + max (altura (zipAB i I)) (altura (zipAB d D))
+        max (altura i) (altura d)    ≥ max (altura (zipAB i I)) (altura (zipAB d D))
+
+        Luego, tenemos 3 casos:
+        1. (altura i) > (altura d) <--> altura (zipAB i I) > (altura (zipAB d D))
+        (altura i)  ≥ (altura (zipAB i I))
+        ** sabemos que vale  P(i) por HI
+
+        2. (altura i) < (altura d) <--> altura (zipAB i I) < (altura (zipAB d D))
+        (altura d)  ≥ altura (zipAB d D)
+        ** sabemos que vale  P(d) por HI
+
+        3. (altura i) = (altura d) <--> altura (zipAB i I) ≥ (altura (zipAB d D))
+        altura i ≥ altura (zipAB i I)  * por Hi P(i) vale
+        altura d ≥ altura (zipAB d D)  * por Hi P(d) vale
+
+        Luego queda demostrado:
+        altura (Bin i r d) ≥ altura (zipAB (Bin i r d) u)

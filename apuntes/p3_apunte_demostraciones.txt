@@ -1,0 +1,509 @@
+/* Algunas propiedades y reglas de las practicas: */
+
+F::a-> b
+G::a-> b
+Y::b
+Z::a
+
+Regla β: (\x → Y ) Z = Y  (reemplazando x por Z)
+Regla η: \x → F x = F
+
+
+
+## Ejemplo 1
+----------------------------------------------------------------------
+
+Dadas las siguientes definiciones:
+
+curry :: ((a, b)-> c) -> (a->b->c)
+{C} curry f = (\x y -> f(x,y))
+
+uncurry :: (a->b->c) -> ((a, b)->c)
+{U} uncurry f = (\(x, y) -> f x y)
+
+(.) :: (b->c) -> (a->b) ->(a->c)
+
+{COMP} (f . g) x = f (g x)
+
+id :: a -> a 
+{I} id x = x
+
+
+Probar que curry . uncurry = id 
+
+-- Por principio de extensionalidad vemos que ∀x::a->b->C.
+
+-- Probar (curry . uncurry) x = id x
+
+(curry . uncurry) x 
+ {COMP} = curry (uncurry x)
+    {U} = curry (\(z,y)-> x z y)
+    {C} = \j i -> (\(z,y)->x z y)(j,i) 
+    {β} = \j i -> x j i
+haskell = (j -> (\i -> x j i)) 
+    {η} =  \j -> x j 
+    {η} = x
+        = id x 
+        = x
+
+
+## Ejemplo 2 
+----------------------------------------------------------------------
+
+Dadas las siguientes definiciones:
+
+prod :: Either Int (Int, Int) -> Either Int (Int, Int) -> Either Int (Int, Int)
+{P0} prod (Left x) (Left y) = Left (x * y)
+{P1} prod (Left x) (Right (y, z)) = Right (x * y, x * z)
+{P2} prod (Right (y, z)) (Left x) = Right (y * x, z * x)
+{P3} prod (Right (w, x)) (Right (y, z)) = Left (w * y + x * z)
+
+Probar que ∀p::Either Int (Int, Int) . ∀q::Either Int (Int, Int) . prod p q = prod q p
+
+
+-- Por el lema de generacion de la suma,  p:: Either Int (Int,Int)  hay 2 casos:
+    ▶ caso(A):  ∃k :: Int talque p = Left k
+    ▶ caso(B):  ∃l :: (Int,Int) talque p = Right l
+
+            Por lema de generacion de pares: 
+             ∃x :: Int, y :: Int tales que l = (x,y)
+
+    ▶ caso(C): ∃k′:: Int . q = Left k′
+    ▶ caso(D): ∃x,y′:: Int . q = Right (x′, y′) 
+
+
+-- CASO (A) y (C) --
+
+   prod p q = prod (Left k)(Left k′) 
+{PO} = Left (k*k′)
+{..} = Left (k′*k)
+{PO} = prod (Left k′)(Left k)
+     = prod q p 
+
+-- CASO (B) y (C) --
+
+    prod p q = (Right (x, y))(Left k′)
+{P2} = Right (x*k′, y*k′)
+{..} = (k′* x, k′ * y) 
+{P1} = prod(Left k′)(Right (x,y))
+     = prod q p
+
+
+## Ejemplo 3
+----------------------------------------------------------------------
+
+Dadas las siguientes definiciones:
+
+vacio :: Conj a
+{V} vacio = \ -> False
+
+interseccion :: Conj a-> Conj a-> Conj a
+{I} interseccion c d = \e -> c e && d e
+
+agregar :: Eq a => a -> Conj a -> Conj a
+{A} agregar e c = \e -> e == x || c e
+
+diferencia :: Conj a -> Conj a-> Conj a
+{D} diferencia c d = \e -> c e && not (d e)
+
+
+Probar ∀c::Conj a . ∀d::Conj a . interseccion d (diferencia c d) = vacio
+
+-- Por extensionalidad basta ver que ∀x::a . interseccion d (diferencia c d) x = vacio x
+
+vacio x 
+ {v} = (\_ -> False) x 
+ {β} = False
+
+interseccion d (diferencia c d) x 
+ {D} = interseccion(\e′-> c e && not (d e)) x 
+ {I} = (\e′-> d e′ && (\e->c e && not(d e))e′) x
+ {β} = (\e′-> d e′ && (c e′ && not(d e′))) x
+ {β} = d x && (c x && not(d x))
+     = False && c x 
+     = False
+
+
+## Ejemplo 3 :: INDUCCION SOBRE LISTAS
+----------------------------------------------------------------------
+
+Dadas las siguientes definiciones:
+
+length1 :: [a] -> Int
+{L10} length1 [] = 0
+{L11} length1 ( :xs) = 1 + length1 xs
+
+length2 :: [a] -> Int
+{L2} length2 = foldr (\ res -> 1 + res) 0
+
+Recordemos:
+foldr :: (a -> b -> b) -> b -> [a] -> b
+{F0} foldr f z [] = z
+{F1} foldr f z (x:xs) = f x (foldr f z xs)
+
+
+Probar que length1 = length2 
+
+-- Por propiedad de extensionalidad quiero ver que ∀xs::[a] . length1 xs = length2 xs
+
+P(xs):  length1 xs = length2 xs
+
+Para ver que vale ∀xs::[a]. P(xs) por induccion estructural, veo que vale: 
+    ▶ P([]) -- caso base
+    ▶ ∀x::a . P(xs) ⇒ P(x:xs) -- caso inductivo
+
+-- Caso Base --
+
+   P([]) = length1 [] = length2 []
+   
+   length1 []
+   {L10} = 0 
+
+   length2 [] 
+   {L2} = foldr(\_ res -> 1 + res) 0 []
+   {F0} = 0
+
+-- Paso Inductivo -- 
+
+   ∀x::a . P(xs) ⇒ P(x:xs)
+
+-- Recuerdo: {H1} ≣ P(xs) ≡ (length1 xs = length2 xs)
+
+   ▶ P(xs)   ≡ (length1 xs = length2 xs) qvq P(x:xs)
+   ▶ P(x:xs) ≡ length1 (x:xs) = length2 (x:xs)
+
+   length1(x:xs) 
+   {L11} ≡  1 + length1 xs
+
+   length2(x:xs) 
+   {L2} = foldr(\_ res -> 1 + res) 0 (x:xs)    
+   {F1} = (\_ res -> 1 + res) x (foldr (\_ res -> 1 + res) 0 xs) 
+   {L2} = (\_ res -> 1 + res) x (length2 xs) 
+    {β} = (\_ res -> 1 + res)(length2 xs)
+    {β} = (\_-> \res -> 1 + res)(length2 xs)
+    {β} = (\res -> 1 + res) (length2 xs)
+    {β} = 1 + length2 xs 
+   {HI} = 1 + length1 xs
+        = length1 (x:xs)
+
+
+## Ejemplo 4 :: DEMOSTRAR IMPLICACIONES (revisar)
+----------------------------------------------------------------------
+
+Dadas las siguientes definiciones:
+
+elem :: Eq a => a -> [a] -> Bool
+{E0} elem e [] = False
+{E1} elem e (x:xs) = (e == x) || elem e xs
+
+maximum :: Ord a => [a] -> a
+{M0} maximum [x] = x
+{M1} maximum (x:y:ys) = if x < maximum (y:ys) then maximum (y:ys) else x
+
+
+Probar que Ord a ⇒ ∀e::a . ∀ys::[a] . (elem e ys ) ⇒ e ≤ maximum ys)
+
+-- Sabemos que valen Eq a y Ord a. Queremos ver que, para toda lista ys, vale:
+
+P(ys) = ∀e::a . (elem e ys ⇒ e ≤ maximum ys)
+
+-- Por induccion estructural en ys, vemos que:
+   ▶ P([])
+   ▶ ∀x::a . P(xs)⇒ P(x:xs) 
+
+-- Caso Base: ∀e::a . P(xs == [])
+
+P([]) =  (elem e []) ⇒ e ≤ maximum [])
+      =   False      ⇒ e ≤ maximum
+      =   True 
+
+-- Caso Inductivo: P(xs == x:xs)
+
+HI:   elem e ys ⇒ e ≤ maximum ys 
+
+Sabemos que vale P(ys) por HI y queremos ver que vale P(y:ys):
+
+P(ys)   =  ∀e::a . elem e ys ⇒ e ≤ maximum ys 
+P(y:ys) =  elem e ys ⇒ e ≤ maximum ys
+
+Sea e::a talque True = elem e (y:ys) qvq e ≤ maximum (y:ys)
+-- Por el lema de generacion de listas:
+    - (A) ys = []
+    - (B) ∃ z::a, zs::[a] tales que ys = (z:zs)
+
+-- caso(A) : (ys == [])
+
+    qvq:  
+    e ≤ maximum (y:ys) 
+         ≡ e ≤ maximum [y] 
+    {MO} ≡ e ≤ y
+
+  -- ya se que True = elem e (y:ys), entonces en este caso ( True = elem e (y:[]) )
+
+    True = elem e (y: []) 
+         = (e == y) || elem e [] 
+    {E0} = (e == y) || False 
+         = (e == y) 
+
+  -- entonces e = y ⇒ e ≤ y
+
+
+----- obs:
+    True = elem e (y:ys)    qvq  e ≤ maximum (y:ys)
+    ≡ (e == y) || elem e [] qvq  e ≤ maximum (y:[])
+    ≡ (e == y) || False     qvq  e ≤ maximum [y]
+    ≡ (e == y)              qvq  e ≤ y
+     
+     entonces e = y ⇒ e ≤ y
+------
+-- caso(B) --
+
+
+    qvq e ≤ maximum (y:ys) 
+      ≡ e ≤ maximum (y:z:zs) 
+      ≡ e ≤ if y < maximum (z:zs) then maximum (z:zs) else y 
+      ≡ e ≤ if y < (maximum ys) then maximum (maximum ys) else y 
+      = (☆)
+
+    por el lema de gen de Bool
+        (B1) y < maximum ys = True
+        (B2) y < maximum ys = False
+
+    -- caso(B1)
+
+        (☆)
+       ≡ e ≤ if True then maximum ys else y
+       ≡ e ≤ maximum ys
+
+
+    True = elem e (y:ys) = (e == y) || elem e ys 
+
+    por el lema de gen de Bool
+        (B1.1) (e == y) = True
+        (B1.2) (e == y) = False
+
+    -- caso(B1.1)  
+         (e=y) entonces lo que quiero ver es  que (☆) y ≤ maximo ys
+         Por HI, (B1) Vale (y < maximum ys) y por lo tanto (y ≤ maximum ys)
+    
+    -- caso(B1.2) 
+         (e==y) = False entonces
+          True  = (e==y) || elem e ys 
+                = False  || elem e ys 
+                = elem e ys
+
+    por HI, vale e ≤ maximum ys (☆)
+
+    -- Caso(B2)
+        y < maximum ys = False ⇒ y ≤ maximum ys
+        (☆) e ≤ if False then (maximum ys) else y
+              ≡ e ≤ y
+
+        Lema de gen de Bool:
+          ▶ (e==y) = True ->  e=y -> e ≤ y
+          ▶ (e==y) = False -> elem e ys = True ⇒ e ≤ maximum ys ... e ≤ maximum ys ∴ e ≤ y 
+
+        True = elem e (y:ys)  
+        {HI} = (e==y) || elem e ys 
+
+
+## Ejemplo 5 (revisar)
+----------------------------------------------------------------------
+
+Dadas las siguientes definiciones:
+
+length :: [a] -> Int
+{L0} length [] = 0
+{L1} length (x:xs) = 1 + (length xs)
+
+foldl :: (b -> a -> b) -> b -> [a] -> b
+{F0} foldl f ac [] = ac
+{F1} foldl f ac (x:xs) = foldl f (f ac x) xs
+
+reverse :: [a] -> [a]
+{R} reverse = foldl (flip (:)) []
+
+flip :: (a -> b -> c) -> (b -> a -> c)
+{FL} flip f x y = f y x
+
+{lema}: ∀ys::[a]. ∀zs::[a].length zs + length ys = length (foldl (flip (:)) zs ys)
+
+
+Probar que:  ∀ys::[a] . length ys = length (reverse ys)
+
+{def reverse} ≡ ys::[a] . length ys = length (foldl (flip (:)) [] ys)
+
+P(ys) ≡ length ys = length (foldl (flip (:))[] ys)
+
+-- Caso Base -- : P([])
+
+P([]) ≡ length [] 
+      = length(foldl(flip(:)) [] []) 
+      = length [] 
+ {L0} = 0
+
+-- Caso Inductivo -- : P(ys) ⇒ P(y:ys)
+
+HI =   P(ys) ≡ length ys = length (foldl (flip(:))[] ys) 
+qvq  P(y:ys) ≡ length (y:ys) = length (foldl (flip (:) [] (y:ys)))
+
+
+P(y:ys) ≡ length(foldl (flip (:) [] y:ys))
+   {F1} = length(foldl (flip (:)) (flip (:) [] y) ys)
+   {FL} = length(foldl (flip (:)) [y] ys)
+   {..} = length(foldl (flip (:)) [](y:ys)) 
+   {F1} = length(foldl (flip (:)) (flip (:) [] y) ys )
+   {FL} = length(foldl (flip (:)) [y] ys)
+ {lema} = 1 + length ys
+        = length (y:ys)
+
+--  obs: length y:ys = 1 + length ys   
+--  HI = P(ys) ≡ length ys = length (foldl (flip(:))[] ys) 
+
+
+En el caso inductivo (ys = x:xs) nuestra Hipotesis Inductiva es:
+      length xs = length (foldl (flip (:)) [] xs)
+Pero lo que necesitamos es:
+      1 + length xs = length (foldl (flip (:)) (x:[]) xs)
+
+Probemos una propiedad mas general: 
+    ∀ys::[a]. ∀zs::[a].length zs + length ys = length (foldl (flip (:)) zs ys)
+
+P(ys) ≡ ∀zs::[a] . length zs + length ys = length (foldl (flip(:)) zs ys)
+
+-- Caso Base:           P([])
+
+P([]) = ∀zs::[a] . length(foldl (flip(:))zs [])
+
+P([]) ≡ length(foldl (flip(:))zs [])
+      = length zs + length [] 
+ {L0} = length zs
+      = length (foldl (flip(:))zs [])
+ {F0} = length zs
+
+-- Caso Inductivo:       ∀x::a . P(xs) ⇒ P(x:xs)
+
+HI:   
+P(xs) = ∀zs::[a] . length zs + length xs = length (foldl (flip (:))zs xs)
+
+qvq:
+P(x:xs) ≡ ∀zs::[a] . length zs + length (x:xs) =  length (foldl (flip (:))zs x:xs)
+
+P(x:xs) ≡ length (foldl (flip (:)) zs' (x:xs))
+{F1} = length (foldl (flip (:)) (flip (:) zs' x) xs)
+{FL} = length (foldl (flip (:)) (x:zs') xs) 
+{HI} = length (x:zs') + length xs 
+     = 1 + length zs' +  length xs
+     = length zs' + length x:xs
+
+
+## Ejercicio 6 :: Extra
+----------------------------------------------------------------------
+
+Dadas las siguientes definiciones:
+
+flipTake :: [a] -> Int -> [a]
+{FT} flipTake = foldr
+    (\x rec n -> if n == 0 then [] else x : rec (n-1))
+    (const [])
+
+take’ :: [a] -> Int -> [a]
+{T0} take’ [] = []
+{T1} take’ (x:xs) n = if n == 0 then [] else x : take’ xs (n-1)
+
+foldr :: (a -> b -> b) -> b -> [a] -> b
+{F0} foldr f z [] = z
+{F1} foldr f z (x:xs) = f x (foldr f z xs)
+
+const :: (a -> b -> a)
+{C} const = (\x ->\ -> x)
+
+
+Probar que take’ = flipTake
+
+-- Por extensionalidad, basta ver que ∀xs::[a] . take’ xs = flipTake xs
+
+P(xs) ≡ take’ xs = flipTake xs
+
+-- Caso Base: P([]) ≡ take’[] = flipTake []
+
+P([]) ≡ take’ [] 
+  {η} = \n -> take’[] n
+ {T0} = flipTake []
+ {FT} = foldr (\x rec n -> i & n == 0 then [] else x:rec (n-1)) (const []) []
+ {F0} = const []
+  {C} = (\x -> \_ -> x) []
+  {β} = \ _ -> []
+
+-- Caso Inductivo: P(xs) ⇒ P(x:xs)
+
+hi : P(ys) = take' ys = flipTake ys
+qvq: P(x:xs) = ∀x::a . take' (y:ys) = flipTake (y:ys)
+
+P(x:xs) ≡ take (y:ys) 
+    {η} = \n -> (take’ (y:ys) n)
+   {T1} = \n -> (if n==0 the [] else y : take’ ys (n-1))
+   {H1} = \n -> (if n==0 the [] else y : flipTake ys (n-1)) ★
+
+   flipTake (y:ys) = foldr (\x rec n -> if n==0 the [] else x : rec(n-1)) (concat []) (y:ys)
+   {FT} = (\x rec n -> if n==0 the [] else x:rec(n-1)) y (flipTake ys)
+    {β} = (\rec n -> if n==0 then [] else y:rec(n-1))(flipTake ys)
+
+    {β} = \n -> if n==0 then [] else y: (flipTake ys) (n-1) ★
+
+
+## Ejercicio :: DEMOSTRAR PROPS SOBRE ARBOLES (revisar)
+----------------------------------------------------------------------
+
+Dadas las siguientes funciones:
+
+cantNodos :: AB a -> Int
+{CN0} cantNodos Nil = 0
+{CN1} cantNodos (Bin i r d) = 1 + (cantNodos i) + (cantNodos d)
+
+inorder :: AB a -> [a]
+{I0} inorder Nil = []
+{I1} inorder (Bin i r d) = (inorder i) ++ (r:inorder d)
+
+length :: [a] -> Int
+{L0} length [] = 0
+{L1} length (x:xs) = 1 + (length xs)
+
+{Lema}: ∀xs::[a] . ∀ys::[a] . length (xs++ys) = length xs + length ys
+
+Probar que ∀t::AB a . cantNodos t = length (inorder t)
+
+-- Por induccion sobre t:
+
+
+-- Caso Base: P(Nil)
+
+cantNodos t   = length (inorder t)
+contNodos Nil = lenght (inorder Nil)           
+      0 = lenght []
+      0 = 0
+ 
+-- Caso Inductivo: ∀x::a .  P(i) ∧ P(d) ⇒ P(Bin i x d)
+
+HI :
+  ▶ P(i) ≡ cantNodos i = length (inorder i)
+  ▶ P(d) ≡ cantNodos d = length (inorder d)
+
+qvq: P(Bin i x d) = cantNodos (Bin i x d) = lenght (inorder(Bin i x d))
+
+** por extensionalidad  en t . t = Nil ∧   t = Bin i x d  ** 
+
+-- Caso t = Nil -> probado por CASO BASE
+
+-- Caso t = Bin i x d
+
+                           cantNodos (Bin i x d) = length (inorder (Bin i x d) )
+    {I1}       1 + (cantNodos i) + (cantNodos d) = lenght  ((inorder i) ++ (x:inorder d)) 
+  {Lema}       1 + (cantNodos i) + (cantNodos d) = lenght i +  lenght ( [x] ++ d )  
+  {Lema}       1 + (cantNodos i) + (cantNodos d) = lenght i + (lenght [x] + lenght d)
+  {Lema}       1 + (cantNodos i) + (cantNodos d) = 1 + lenght i + lenght d 
+{H1 en i}      1 + (cantNodos i) + (cantNodos d) = 1 + (cantNodos i) + lenght d  
+{H1 en d}      1 + (cantNodos i) + (cantNodos d) = 1 + (cantNodos i) + (cantNodos d)
+
+
+          

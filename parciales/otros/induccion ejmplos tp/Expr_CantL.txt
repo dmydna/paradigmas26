@@ -1,0 +1,91 @@
+{CONMUT} ∀n, m :: Nat · suma n m = suma m n
+
+data Expr
+  = Const Float
+  | Rango Float Float
+  | Suma Expr Expr
+  | Resta Expr Expr
+  | Mult Expr Expr
+  | Div Expr Expr
+
+
+Enunciado:
+
+data Nat = Z | S Nat
+suma :: Nat → Nat → Nat
+suma Z m = m                    -- { S1 }
+suma ( S n ) m = S ( suma n m ) -- { S2 }
+
+cantLit:: Expr → Nat
+cantLit ( Const _ )   = S Z                            -- { L1 }
+cantLit ( Rango _ _ ) = S Z                            -- { L2 }
+cantLit ( Suma a b )  = suma ( cantLit a) ( cantLit b) -- { L3 }
+cantLit ( Resta a b ) = suma ( cantLit a) ( cantLit b) -- { L4 }
+cantLit ( Mult a b )  = suma ( cantLit a) ( cantLit b) -- { L5 }
+cantLit ( Div a b )   = suma ( cantLit a) ( cantLit b) -- { L6 }
+
+cantOp:: Expr → Nat
+cantOp ( Const _ )   = Z                               -- { 01 }
+cantOp ( Rango _ _ ) = Z                               -- { 02 }
+cantOp ( Suma a b )  = S (suma (cantOp a) (cantOp b))  -- { 03 }
+cantOp ( Resta a b ) = S (suma (cantOp a) (cantOp b))  -- { 04 }
+cantOp ( Mult a b )  = S (suma (cantOp a) (cantOp b))  -- { 05 }
+cantOp ( Div a b )   = S (suma (cantOp a) (cantOp b))  -- { 06 }
+
+
+Demostrar:
+ ∀e :: Expr . cantLit e = S (cantOp e)
+
+Definimos P(e) :=  cantLit e = S (cantOp e)
+
+Por principio de inducción estructural sobre el tipo Expr, si probamos que vale:
+1. ∀n :: Float . P(Const n).
+2. ∀n, m :: Float . P(Rango n m).
+3. ∀e1, e2 :: Expr . P(e1) ∧ P(e2) ⇒ P(Suma e1 e2)
+4. ∀e1, e2 :: Expr . P(e1) ∧ P(e2) ⇒ P(Resta e1 e2)
+5. ∀e1, e2 :: Expr . P(e1) ∧ P(e2) ⇒ P(Mult e1 e2)
+6. ∀e1, e2 :: Expr . P(e1) ∧ P(e2) ⇒ P(Div e1 e2)
+Entonces queda demostrado, ∀e :: Expr. P(e)
+
+Caso base: 
+
+1. ∀n :: Float . P(Const n).
+-----------------------------------
+P(Const n) ≡ cantLit (Const n) = S (cantOp (Const n))
+       cantLit (Const n) 
+{L1} = S Z 
+{O1} = S (cantOp (Const n))
+
+
+2. ∀n,m :: Float . P(Rango n m) 
+-----------------------------------
+ P(Rango n m) ≡ cantLit (Rango n m)
+       cantLit (Rango n m) = S (cantOp (Rango n m))
+{L2} = S Z
+{O2} = S (cantOp (Rango n m))
+
+
+Caso inductivo:
+
+3. ∀e1, e2 :: Expr . P(e1) ∧ P(e2)  ⇒ P(Suma e1 e2)
+----------------------------------------------------
+
+    Sean ∀e1,e2 :: Expr . 
+    Supongamos que vale la HI: 
+       P(e1) ∧ P(e2) donde
+       1. P(e1) ≡  cantLit (e1) = S (cantOp (e1)) 
+       2. P(e2) ≡  cantLit (e2) = S (cantOp (e2)) 
+    Y veamos que vale la TI: 
+       P(Suma e1 e2) ≡ cantLit (Suma e1 e2) = S (cantOp (Suma e1 e2)) 
+               
+            cantLit (Suma e1 e2)
+{L3}     =  suma (cantLit e1) (cantLit e2)
+{HI}     =  suma (S (cantOp e1)) (S (cantOp e2))   
+{S2}     =  S  (  suma (cantOp e1)  (S (cantOp e2)) )
+{CONMUT} =  S  (  suma (S (cantOp e2)) (cantOp e1)  )
+{S2}     =  S  (  S (suma (cantOp e2) (cantOp e1)  )) 
+{CONMUT} =  S S (suma (cantOp e1) (cantOp e2))
+{O3}     =  S cantOp (Suma e1 e2)
+
+Tal y como dice el enunciado, la demostracion para los constructores de Div, Mult y Resta es identica a la de Suma y quedan demostrados con el caso 3.
+Con esto queda demostrado que vale  ∀e :: Expr . P(e) := cantLit e = S (cantOp e).

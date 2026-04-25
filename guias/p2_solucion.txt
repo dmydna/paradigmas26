@@ -1,0 +1,553 @@
+## Ejercicio 3.
+---------------------------------------------------------------------
+
+Dadas las siguientes definiciones:
+
+length :: [a] -> Int
+{L0} length [] = 0
+{L1} length (x:xs) = 1 + length xs
+
+duplicar :: [a] -> [a]
+{D0} duplicar [] = []
+{D1} duplicar (x:xs) = x : x : duplicar xs
+
+(++) :: [a] -> [a] -> [a]
+{++0} [] ++ ys = ys
+{++1} (x:xs) ++ ys = x : (xs ++ ys)
+
+append :: [a] -> [a] -> [a]
+{A0} append xs ys = foldr (:) ys xs
+
+ponerAlFinal :: a -> [a] -> [a]
+{P0} ponerAlFinal x = foldr (:) (x:[])
+
+reverse :: [a] -> [a]
+{R0} reverse = foldl (flip (:)) []
+
+--
+
+foldr :: (a -> b -> b) -> b -> [a] -> b
+{F0} foldr f z [] = z
+{F1} foldr f z (x:xs) = f x (foldr f z xs)
+
+map :: (a -> b) -> [a] -> [b]
+{M} map = foldr (\y rec -> f y : rec) []
+
+
+
+Demostrar:
+1. ∀ xs::[a] .length (duplicar xs) = 2 * length xs
+
+-- Por principio de induccion estructural sobre listas ∀xs::[a] .length (duplicar xs) = 2 * length xs
+
+
+P(xs): ∀xs::[a] .length (duplicar xs) = 2 * length xs
+
+-- Caso Base: P([])
+
+P(xs) ≡ length (duplicar xs) 
+   = lenght ( duplicar [])
+{D0}  = lenght ([])
+{L0}  = 0
+{L0}  = 2 * length []
+
+-- Caso Inductivo: P(xs) ⇒ P(x:xs) ≡ uso HI para ver que P(x:xs) vale.
+
+
+HI: P(xs)  ≡ length (duplicar xs) = 2 * length xs
+
+qvq: 
+P(x:xs) ≡ length (duplicar x:xs) = 2 * length x:xs
+
+
+P(x:xs) ≡ length (duplicar x:xs)
+{D1}    = lenght(x : x : duplicar xs)
+{L1}    = 1 + lenght (x: duplicar xs)
+{L1}    = 2 + lenght (duplicar xs)
+{HI}    = 2 + (2 * length xs)
+    = 2 (1 + length xs)
+    = 2 (lenght x:xs)
+
+
+
+
+
+
+Demostrar:
+2. ∀ xs::[a] .∀ ys::[a] .length (xs ++ ys) = length xs + length ys
+
+-- Por principio de induccion estructural sobre listas
+
+P(xs): ∀ xs::[a] .∀ ys::[a] .length (xs ++ ys) = length xs + length ys
+
+-- Caso Base: P([])
+
+P([]) ≡  length ([] ++ ys) 
+{++1} = lenght ys
+   = lenght [] + lenght ys
+ 
+-- Caso Inductivo: P(xs) ⇒  P(x:xs)
+
+Hi  :  length (xs ++ ys) = length xs + length ys
+qvq :  lenght (x:xs ++ ys) =  lenght x:xs + lenght ys
+
+P(x:xs) ≡ lenght (x:xs ++ ys) 
+{++2} = length ( x : (xs ++ ys) )
+{L1}  = 1 + lenght (xs ++ ys)
+{HI}  = 1 + lenght xs + lenght ys 
+   = lenght (x:xs) + lenght ys
+
+
+
+
+
+
+Demostrar:
+3. ∀ xs::[a] .∀ x::a .append [x] xs = x:xs
+
+-- Por principio de induccion sobre litas
+
+P(xs) ≡ append [x] xs = x:xs
+
+-- Caso Base: P([])
+
+P([]) ≡ append [x] [] 
+{A0}  = foldr (:) [] [x]
+{F0}  = (:) x (foldr (:) [] [])
+   = (:) x []
+   = x:[]
+-- Caso Base:  ∀ xs::[a] .∀ x::a. P(x) ⇒ P(x:xs)
+
+Hi  :   append [x] xs = x:xs
+qvq :   append [x] x:xs = x:(x:xs)
+
+P(x:xs) ≡ append [x] x:xs = x:x:xs
+{A1}   = foldr (:) [x] (x:xs) 
+{F1}   = (:) x (foldr (:) (x:xs) []) 
+{F1}   = (:) x (append [x] xs)
+    = x:(x:xs)
+
+
+
+
+
+
+Demostrar
+4. ∀ xs::[a] .∀ f::(a->b) .length (map f xs) = length xs
+
+-- Principio de Induccion sobre listas
+
+P(xs):  length (map f xs) = length xs
+
+-- Caso Base: P([])
+
+P([]) ≡ lenght (map f [])
+{M} = lenght (map f [])  
+  = foldr (\y rec -> f y : rec) [] []
+  = length []
+
+-- Caso Inductivo: ∀ xs::[a]. ∀ x::[a] . P(x) ⇒ P(x:xs)
+
+HI: length (map f xs) = length xs
+qvq: length (map f x:xs) = length x:xs
+
+P(x:xs) ≡ length (map f x:xs) = 
+    = lenght (f x : map f xs )
+    = 1 + lenght (map f xs) 
+{Hi}    = 1 + lenght xs
+    = lenght x:xs 
+
+
+
+Demostrar:
+5. ∀ xs::[a] .∀ p::a->Bool .∀ e::a .((elem e (filter p xs)) ⇒ (elem e xs)) (asumiendo Eq a)
+
+// TODO
+
+
+Demostrar:
+6. ∀ xs::[a] .∀ x::a . ponerAlFinal x xs = xs ++ (x:[])
+
+-- Por principio de induccion sobre listas
+
+P(xs) ≡ ponerAlFinal x xs = xs ++ (x:[])
+
+-- Caso Base: P([])
+
+P([]) ≡  ponerAlFinal x [] 
+   =  foldr (:) (x:[]) []
+   = (:) (x:[]) []
+   =  [] ++ (x:[])
+   = [x]
+
+-- Paso Inductivo: ∀ xs::[a] . ∀ x:: a . P(xs) ⇒ P(x:xs)
+
+P(x:xs) ≡  ponerAlFinal x x:xs
+= foldr (:) (x:[]) (x:xs)
+= (x:xs) ++ (x:[])
+
+Solucion Alt (revisar): 
+
+∀ xs::[a], ∀ x::a, ponerAlFinal x xs = xs ++ (x:[])
+
+Por induccion sobre la lista xs:
+HI: ponerAlFinal x xs = xs ++ (x:[])
+
+Caso base P(xs == []):
+ponerAlFinal x [] = [] ++ (x:[])
+{++0}=  ponerAlFinal x [] = x:[]
+{P0}=   foldr (:) (x:[]) [] = x:[]
+{FR0}=  x:[] = x:[]
+
+Paso inductivo P(xs == (y:ys)):
+ponerAlFinal y (y:ys) = (y:ys) ++ (y:[])
+{P0}=   foldr (:) (y:[]) (y:ys) = (y:ys) ++ (y:[])
+{FR1}=  (:) y (foldr (:) (y:[]) ys) = (y:ys) ++ (y:[])
+{P0}=   (:) y (ponerAlFinal y ys) = (y:ys) ++ (y:[])
+{++1}=  (:) y (ponerAlFinal y ys) = y : (ys ++ (y:[]))
+{HI}=   (:) y (ys ++ (y:[])) = y : (ys ++ (y:[]))
+{Lista}=y : (ys ++ (y:[])) = y : (ys ++ (y:[]))
+
+
+Demostrar:
+7. reverse = foldr ( \x rec -> rec ++ (x:[]) ) []
+
+-- Por principio de extensionalidad sobre listas :
+    ∀ xs::[a] . reverse xs = foldr ( \x rec -> rec ++ (x:[]) ) [] xs
+-- Por induccion sobre listas: 
+
+P(xs) ≡ reverse xs = foldr ( \x rec -> rec ++ (x:[]) ) [] xs
+
+-- caso Base: P([])
+
+P([]) ≡ reverse xs 
+= foldl (flip (:)) [] (xs)
+= foldr ( \x rec -> rec ++ (x:[]) ) [] []
+= []
+
+-- Caso Inductivo:  ∀x::a . ∀ xs::[a] . P(xs) ⇒ P(x:xs)
+
+hi  :  P(xs)   ≡ reverse xs = foldr ( \x rec -> rec ++ (x:[]) ) [] xs
+qvq :  P(x:xs) ≡ reverse x:xs = foldr ( \x rec -> rec ++ (x:[]) ) [] x:xs
+
+P(xs) ≡ reverse x:xs
+= foldl (flip (:)) [] (x:xs)
+= foldl (flip (:)) (flip (:) [] y) ys
+(.....)
+
+snapcode: file:///home/danim/Documentos/03_vii.txt
+
+
+Demostrar
+8. ∀ xs::[a] .∀ x::a .head (reverse (ponerAlFinal x xs)) = x
+
+
+// TODO
+
+
+## Ejercicio 4.
+---------------------------------------------------------------------
+
+1. Probar que reverse . reverse = id
+
+reverse :: [a] -> [a]
+{R0} reverse = foldl (flip (:)) []
+
+{R1} reverse = foldr (\x rec -> rec ++ (x:[])) []
+
+(++) :: [a] -> [a] -> [a]
+(++) xs ys = foldr (:) ys xs
+
+
+Recordemos:
+foldr :: (a -> b -> b) -> b -> [a] -> b
+{F0} foldr f z [] = z
+{F1} foldr f z (x:xs) = f x (foldr f z xs)
+
+
+-- Por propiedad de extensionalidad qvq ∀xs::[a] . (reverse . reverse xs = id xs)
+
+-- Caso Base -- 
+P([]) = reverse . reverse [] = id []
+
+= reverse (reverse [])
+= reverse []
+= []
+
+id [] = [] 
+
+-- Paso Inductivo -- 
+∀xs::[a] . P(xs) ⇒ P(x:xs)
+
+- P(xs) = HI = reverse . reverse xs = id xs
+- P(x:xs) = reverse . reverse x:xs = id x:xs
+
+reverse . reverse (x:xs) = id (x:xs)
+= reverse (reverse x:xs) 
+{R1} = reverse (foldr (\x rec -> rec ++ (x:[]) ) [] )(x:xs)
+{F1} = reverse ( (\x rec -> rec ++ (x:[]))  x  foldr (\x rec -> rec ++ (x:[])) [] xs )
+{R1} = reverse ( (\x rec -> rec ++ (x:[])) (reverse xs) )
+{β} = reverse ( (\rec -> rec ++ (x:[]) )(reverse xs) )
+{β} = reverse ( reverse xs ++ (x:[]) )
+{..} = reverse (x : reverse xs)
+{TODO}= x : reverse ( reverse xs ) 
+{HI} = x : id xs 
+  = id (x:xs)
+
+
+-- TODO
+Demostrar reverse (x : reverse xs) = x : reverse (reverse xs) 
+
+
+
+2. Probar que append = (++)
+
+append :: [a] -> [a] -> [a]
+{A0} append xs ys = foldr (:) ys xs
+
+(++) :: [a] -> [a] -> [a]
+{++} (++) xs ys = foldr (:) ys xs
+
+-- Por principio de extensionalidad sobre listas ∀xs::[a]. ∀ys::[a] . append xs ys = (++) xs ys.
+
+-- Por principio de extensionalidad funcional pruebo que append xs ys = (++) xs ys
+
+-- Caso Base : P([])
+
+qvq append xs [] = (++) xs [] 
+ = append xs []
+ = xs
+ = (++) xs []
+
+
+-- Paso Inductivo
+
+P(xs) ⇒ P(x:xs)
+
+P(xs)  = append xs ys = (++) xs ys
+P(x:x) = append x:xs ys = (++) x:xs ys
+
+append x:xs ys
+{++}  = foldr (:) ys x:xs
+   = (++) x:xs ys
+
+
+
+3. Probar que map id = id         
+
+--- REVISAR ---
+
+map :: (a -> b) -> [a] -> [b]
+{M} map = foldr (\y rec -> f y : rec) []
+
+foldr :: (a -> b -> b) -> b -> [a] -> b
+{F0} foldr f z [] = z
+{F1} foldr f z (x:xs) = f x (foldr f z xs)
+
+
+Por principio de extensionalidad sobre listas. ∀xs::[a] . map id xs = id xs
+
+Por principio de induccion estructural basta ver que: ∀x::[a] map id xs = id xs
+
+-- Case Base : P([]) 
+
+P([]) ≡ map id [] = id []
+
+   = map id [] 
+   = map []
+   = []
+   = id []
+   = []
+
+-- Caso Inductivo : P(xs) ⇒ P(x:xs)
+
+HI  : P(xs)   ≡ map id xs = id xs
+qvq : P(x:xs) ≡ map id (x:xs) = id (x:xs)
+
+P(x:xs) ≡ map id (x:xs)
+  = 
+{M}  = foldr (\y rec -> id y : rec) [] (x:xs)
+     = (\y rec -> id y : rec) x (foldr (\y rec -> id y : rec) [] xs)
+{M}  = (\y rec -> id y : rec) x (map id xs)
+{β}  = (\x rec -> id x : rec)(map id xs)
+{β}  = (\x -> \rec -> id x : rec) (map id xs)
+{β}  = (\rec -> id x : rec) (map id xs)
+{β}  = id x : map id xs
+{HI} = id x : id xs
+     =   x : xs
+     = id (x:xs)
+
+
+4. Probar que:  ∀ f::a->b . ∀ g::b->c . map (g . f) = map g . map f
+
+
+--- REVISAR  ---
+
+map :: (a -> b) -> [a] -> [b]
+{M} map = foldr (\y rec -> f y : rec) []
+
+foldr :: (a -> b -> b) -> b -> [a] -> b
+{F0} foldr f z [] = z
+{F1} foldr f z (x:xs) = f x (foldr f z xs)
+
+{M0} map f [] = []
+{M1} map f (x : xs) = f x : map f xs
+
+
+
+-- Por principio de extensionalidad de lista . ∀xs::[a] . map (g . f) xs = map g (map f xs)
+
+-- Para probar por induccion estructural, ∀xs::[a] . map (g . f) xs = map g (map f xs) vasta ver que:
+  - P([])
+  - ∀x::a . ∀xs::[a] . P(x)⇒ P(x:xs)
+
+-- Case Base: P([])
+
+map (g . f) [] = map g (map f [])
+[] = map g []
+[] = []
+
+-- Caso Inductivo: P(x) ⇒ P(x:xs) 
+
+HI  : P(xs)   ≡ map (g . f) xs = map g (map f xs)
+qvq : P(x:xs) ≡ map (g . f) x:xs = map g (map f x:xs)
+
+P(x:xs) ≡ map (g . f) x:xs
+{M} = foldr (\y rec -> (f . g) y : rec) [] x:xs
+  = (\y rec -> (f . g) y : rec) [] x:xs
+  = (\y -> \rec -> (f . g) y : rec) [] x:xs
+  = (\rec -> (f . g) x : rec)(xs)
+  = (f . g) x : xs
+
+
+
+
+5. Probar que:  ∀ f::a->b . ∀ p::b->Bool . map f . filter (p . f) = filter p . map f
+
+// TODO
+
+
+
+6. Probar que:  ∀ f::a->b . ∀ e::a . ∀ xs::[a] . ((elem e xs) ⇒ (elem (f e) (map f xs)))
+(asumiendo Eq a y Eq b)
+
+-- TODO
+
+
+## Ejercicio 5 ⭐
+---------------------------------------------------------------------
+zip :: [a] -> [b] -> [(a,b)]
+{Z0} zip = foldr (\x rec ys -> if null ys
+                then []
+                else (x, head ys) : rec (tail ys))
+                (const [])
+
+zip’ :: [a] -> [b] -> [(a,b)]
+{Z’0} zip’ [] ys = []
+{Z’1} zip’ (x:xs) ys = if null ys then [] else (x, head ys):zip’ xs (tail ys)
+
+Demostrar que zip = zip’ utilizando inducción estructural y el principio de extensionalidad.
+
+-- Solucion:
+
+
+-- Por principio de extensionalidad funcional basta ver que ∀xs::[a] . ∀ys::[a]. 
+
+-- Por principio de induccion estructural sobre listas 
+
+P(xs) : zip xs ys = xs ys
+
+-- Caso Base: P([])
+
+P(xs) ≡ zip xs ys = zip’ xs ys
+
+P([]) ≡ zip [] ys
+ {Z0} =  foldr (\x rec zs -> if null zs then [] else (x, head zs) : rec (tail zs)) (const []) [] ys
+ {F0} = (const[]) ys
+      = [] 
+ {Z'O} = zip' [] ys
+
+
+-- Paso Inductivo: P(x) ⇒ P(x:xs)
+
+HI  :  P(xs) = zip xs ys = zip’ xs ys
+qvp :  P(x:xs) = zip x:xs ys = zip’ x:xs ys
+
+P(x:xs) ≡ zip x:xs ys 
+{Z0} =  foldr (\x rec ys -> if null ys then [] else (x, head zs) : rec (tail zs)) (const []) [] ys
+  = 
+
+ Ejercicio 6 ⭐
+---------------------------------------------------------------------
+
+nub :: Eq a => [a] -> [a]
+{N0} nub [] = []
+{N1} nub (x:xs) = x : filter (\y -> x /= y) (nub xs)
+union :: Eq a => [a] -> [a] -> [a]
+{U0} union xs ys = nub (xs++ys)
+intersect :: Eq a => [a] -> [a] -> [a]
+{I0} intersect xs ys = filter (\e -> elem e ys) xs
+
+Si es verdadero Demostrarlo , caso contrario presentar contra ejemplo.
+
+1. Eq a => ∀ xs::[a] .∀ e::a .∀ p::a -> Bool .elem e xs && p e = elem e (filter p xs)
+
+// TODO
+
+2. Eq a => ∀ xs::[a] .∀ e::a .elem e xs = elem e (nub xs)
+
+// TODO
+
+3. Eq a => ∀ xs::[a] .∀ ys::[a] .∀ e::a .elem e (union xs ys) = (elem e xs) || (elem e ys)
+
+
+// TODO
+
+4. Eq a => ∀ xs::[a] .∀ ys::[a] .∀ e::a .elem e (intersect xs ys) = (elem e xs) && (elem e
+ys)
+
+// TODO
+
+5. Eq a => ∀ xs::[a] .∀ ys::[a] .length (union xs ys) = length xs + length ys
+
+// TODO
+
+6. Eq a => ∀ xs::[a] .∀ ys::[a] .length (union xs ys) ≤ length xs + length ys
+
+
+// TODO
+
+
+## Ejercicio 12
+---------------------------------------------------------------------
+
+derivado :: Num a => Polinomio a -> Polinomio a
+derivado poli = case poli of
+    X        -> Cte 1
+    Cte _    -> Cte 0
+    Suma p q -> Suma (derivado p) (derivado q)
+    Prod p q -> Suma (Prod (derivado p) q) (Prod (derivado q) p)
+
+sinConstantesNegativas :: Num a => Polinomio a -> Polinomio a
+sinConstantesNegativas = foldPoli True (>=0) (&&) (&&)
+
+esRaiz :: Num a => a -> Polinomio a -> Bool
+esRaiz n p = evaluar n p == 0
+
+
+Demostrar las siguientes propiedades:
+
+1. Num a => ∀ p::Polinomio a . ∀ q::Polinomio a . ∀ r::a . (esRaiz r p ⇒ esRaiz r (Prod p q))
+2. Num a => ∀ p::Polinomio a . ∀ k::a . ∀ e::a .
+evaluar e (derivado (Prod (Cte k) p)) = evaluar e (Prod (Cte k) (derivado p))
+3. Num a => ∀ p::Polinomio a. (sinConstantesNegativas p⇒sinConstantesNegativas (derivado p))
+
+La recursión utilizada en la definición de la función derivado ¿es estructural, primitiva o ninguna de las dos?
+
+-- Solucion:  TODO
+
+1. Num a => ∀ p::Polinomio a . ∀ q::Polinomio a . ∀ r::a . (esRaiz r p ⇒ esRaiz r (Prod p q))
+
+-- Por Principio de induccion estructural
+HI: (esRaiz r p ⇒ esRaiz r (Prod p q))
+

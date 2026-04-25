@@ -1,0 +1,120 @@
+-- Nota: revisar todo en especial, caso recursivo.
+
+data AIH = Hoja a | Bin (AIH a) (AIH a)
+
+
+     esHoja :: AIH a -> Bool
+{E0} esHoja (Hoja x) = True
+{E1} esHoja (Bin i d) = False
+
+    der :: AIH a -> AIH a
+{D} der (Bin i d) = d 
+
+    izq :: AIH a -> AIH a
+{D} izq (Bin i d) = i 
+
+
+     mismaEstructura :: AIH a -> AIH a -> Bool
+{M0} mismaEstructura (Hoja x) = esHoja
+{M1} mismaEstructura (Bin i d) = \t -> not(esHoja t) && 
+             mismaEstructura i (izq t) && mismaEstructura d (der t)
+
+
+Demostrar : 
+∀t :: AIH a. ∀u::AIH a. mismaEstructura t u = mismaEstructura u t
+
+Defino:
+P(t) = ∀u :: AIH a. mismaEstructura t u = mismaEstructura u t
+
+
+-- Solucion
+
+Por induccion estructural sobre (AIH a) si vale;
+   1. ∀n :: a. P(hoja n) 
+   2. ∀i,d :: AIH a. P(i) ∧  P(d) => P(Bin i d)
+Entonces vale. ∀ t :: AIH a . P(t) 
+
+1. Caso Base:  P(Hoja n)
+----------------------------
+
+mismaEstructura (Hoja n) u = mismaEstructura u (hoja n)
+{M0} esHoja u = mismaEstructura u (Hoja n)
+
+  :: Por extensionalidad sobre u  
+       si u:: AIH a, entonces:
+       o bien  ∃x :: a. u = Hoja x
+       o bien  ∃ri,rd :: AIH a . u = Bin ri rd
+
+       Caso 1.  u = Hoja x
+       --------------------
+       esHoja (Hoja x) = mismaEstructura (Hoja x) (Hoja n)
+{E0}   True = esHoja (Hoja n)  {M0} 
+       True = True  {E0}
+
+       Caso 2.  u = Bin ri rd
+       ------------------------
+       esHoja (Bin ri rd) = mismaEstructura (Bin ri rd) (Hoja n)   {M1}
+{E1}   False 
+       = not(EsHoja(Hoja n)) && mismaEstructura ri (izq (Hoja n)) && mismaEstructura rd (der (Hoja n))
+
+* {E0}  not(esHoja (Hoja n) = True) = False
+
+       False 
+       = False && mismaEstructura ri (izq (Hoja n)) && mismaEstructura (der (Hoja n))
+       False = False
+
+
+2. Caso Inductivo: P(Bin i d) 
+------------------------------
+∀i,d :: AIH a. P(i) ∧ P(d) ⇒ P(Bin i d) 
+  Hi :=  P(i) ∧ P(d) 
+  1. P(i) = mismaEstructura i u = mismaEstructura u i
+  2. P(d) = mismaEstructura d u = mismaEstructura u d
+
+
+mismaEstructura (Bin i d) u = mismaEstructura u (Bin i d)
+{M1} \t -> not(esHoja t) &&  mismaEstructura i (izq t) && mismaEstructura d (der t)
+     = mismaEstructura u (Bin i d)
+
+
+  :: Por extensionalidad sobre u  
+       si u:: AIH a, entonces:
+       o bien  ∃x :: a. u = Hoja x
+       o bien  ∃ri,rd :: AIH a . u = Bin ri rd
+
+
+       Caso 1.  u = Hoja x
+       --------------------
+{M1}    \t -> not(esHoja t) &&  mismaEstructura i (izq t) && mismaEstructura d (der t)
+        = mismaEstructura (Hoja x) (Bin i d)
+
+{B}     not(esHoja (Hoja x)=True) && mismaEstructura i (izq (Hoja x)) && mismaEstructura d (der (Hoja x))
+        = mismaEstructura (Hoja x) (Bin i d)
+
+        False && mismaEstructura i (izq (Hoja x) ) && mismaEstructura d (der (Hoja x)) 
+        = mismaEstructura (Hoja x) (Bin i d) 
+
+        False = mismaEstructura (Hoja x) (Bin i d)  
+        False = esHoja (Bin i d) {M0} 
+        False = False
+
+       Caso 2.  u = Bin ri rd
+       ------------------------
+{M1}    \t -> not(esHoja t) &&  mismaEstructura i (izq t) && mismaEstructura d (der t)
+        = mismaEstructura (Bin ri rd) (Bin i d)
+
+
+{B}     = not(esHoja (Bin ri rd)= False) && mismaEstructura i (izq (Bin ri rd)) && mismaEstructura d (der (Bin ri rd))
+        = mismaEstructura (Bin ri rd) (Bin i d)
+
+        True && mismaEstructura i (izq (Bin ri rd)) && mismaEstructura d (der (Bin ri rd)) 
+{M1+B}  = True && mismaEstructura i (izq (Bin ri rd)) && mismaEstructura d (der (Bin ri rd))
+        
+{Hi}    True = True 
+
+
+
+
+
+
+
