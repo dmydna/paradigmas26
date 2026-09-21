@@ -1,0 +1,44 @@
+Cola Ordenada
+‾‾‾‾‾‾‾‾‾‾‾‾‾
+	τ ::= ...| [τ]˂
+	M ::= ...| []˂ₜ | M::˂M | head˂(M) | tail˂(M)
+
+Reglas de Tipado
+‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+
+	—————————————————— t-Nil˂
+	Γ ⊢ []˂ₜ : [τ]˂
+
+	Γ ⊢ M₁:τ   Γ ⊢ M₂: [τ]˂
+	—————————————————————————— t-cons˂
+	Γ ⊢ M₁::˂M₂ : [τ]˂
+
+	—————————————————— t-head˂
+	Γ ⊢ head˂(τ): τ
+
+	Γ ⊢ M:[τ]˂
+	—————————————————— t-tail˂
+	Γ ⊢ tail˂(M): [τ]˂
+
+
+Reglas Congruencias
+‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+	V, W ::= ... | []˂ₜ | V :: ˂W
+
+	si M -> M',  N -> N'
+ 
+	(E-Cons-0)       M :: ˂M -> M' :: ˂N
+	(E-Cons-1)       V :: ˂N -> V  :: ˂N'
+	(E-head-0)       head˂(M) -> head˂(M')
+	(E-tail-0)       tail˂(M) -> tail˂(M')
+
+Semantica Operacional
+‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+	C-head-0      head ˂( V::˂[]˂ₜ ) -> V 
+	C-head-1      head ˂( V₁::˂V₂::˂V₃ ) ->  if V₁ < V₂ then head˂( V₁::˂V₃ ) else head˂( V₂::˂V₃ )
+	C-tail-0      tail ˂( V::˂[]˂ₜ ) -> []˂ₜ
+	C-tail-1      tail ˂( V₁::˂V₂::˂V₃ ) ->  if V₁ < head˂( V₁::˂V₃ ) then V₂::˂V₃ else tail˂( V₂::˂V₃ )
+
+
+
+

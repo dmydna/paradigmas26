@@ -1,0 +1,42 @@
+Diccionario
+‾‾‾‾‾‾‾‾‾‾‾
+	τ ::= ...| Dicc (τ，τ)
+	V ::= ...| Vacioₒₜ | definir(M，M，M) | def ? (M，M) | obtener(M，M)
+
+Reglas de Tipado
+‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+
+	———————————————————————————— vacio 
+	Γ ⊢ Vacioₒₜ : Dic(σ， τ)
+
+
+	Γ ⊢ M: Dicc (σ， τ)  Γ ⊢ N:o
+	——————————————————————————————————— def ? 
+	Γ ⊢ Vacioₒₜ : Dic(σ， τ)
+
+
+	Γ ⊢ M: Dicc (σ， τ)    Γ ⊢ N:σ    Γ ⊢ O:τ 
+	————————————————————————————————————————— definir
+	Γ ⊢ definir(M，N，O): Dic(σ， τ)
+
+
+	Γ ⊢ M: Dicc (σ，τ)    Γ ⊢ N:σ  
+	——————————————————————————————————— obtener
+	Γ ⊢ obtener(M，N): τ
+
+
+Semantica Operacional
+‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾ 
+	V ::=  Vacioₒₜ， definir(V，V，V) 
+
+	(def ? V)    def ? ( Vacioₒₜ， W -> False )
+	(def ? X)    def ? ( definir(V，V，V)，W ) -> if W == W  then True else def ? (V，W`))
+
+	(obt V)      obtener(Vacioₒₜ， W) -> obtener(Vacioₒₜ W)
+                obtener(definir (V₁，V₂，V₃)，V₄)
+
+	(obt M)      if V₂ == V₃ then V₂ else obtener (V₁，V₂)
+
+
+
+

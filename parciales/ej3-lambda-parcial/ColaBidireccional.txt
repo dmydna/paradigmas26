@@ -1,0 +1,47 @@
+Cola Bidireccional
+‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+τ ::=  ...| Colaₜ
+V ::=  ...| 〈〉ₜ | M•M | proximo(M) | desencolar(M) | case M of 〈〉ₜ ⤳ M； c•x ⤳ M
+
+Reglas de tipado
+‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+
+	—————————————————— t-vacio 
+	Γ ⊢ 〈〉ₜ : Colaₜ
+
+
+	Γ ⊢ M₁: Colaₜ    Γ ⊢ M₂: τ
+	—————————————————————————— t-encolar
+	Γ ⊢ M₁•M₂: Colaₜ
+
+
+	Γ ⊢ M:Colaₜ
+	—————————————————— t-proximo
+	Γ ⊢ proximo(M): τ 
+
+
+	Γ ⊢ M: Colaₜ
+	—————————————————————————— t-desencolar
+	Γ ⊢ desencolar(M): Colaτ 
+
+
+	Γ ⊢ M₁∶Colaₜ    Γ ⊢ M₂∶θ    Γ，c∶Colaₜ，x∶τ ⊢ M₃:θ
+	—————————————————————————————————————————————————— t-case
+	Γ ⊢ Case M₁ of 〈〉ₜ ⤳ M₂ ； c•x ⤳  M₃:θ
+
+
+Reglas de Reduccion 
+‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+	V := ... |〈〉ₜ | V•V
+
+	proximo (〈〉ₜ • V) -> V
+	proximo (V₁，V₂，V₃) -> proximo(V₁ • V₂) • V₃
+	desencolar (〈〉ₜ • V) -> 〈〉ₜ
+	desencolar (V₁•V₂•V₃) -> desencolar(V₁•V₂) • V₃
+	case 〈〉ₜ of 〈〉 ⤳ M₁； c•x ⤳ M₂ -> M₁
+	case V₁•V₂ of 〈〉 ⤳ M₁； c•x ⤳ M₂ -> M₁ { c:= V₁, x:= V₂ }
+
+
+
+
+

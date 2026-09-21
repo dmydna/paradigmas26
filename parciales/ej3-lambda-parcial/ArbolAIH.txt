@@ -1,0 +1,23 @@
+Arbol AIH
+‾‾‾‾‾‾‾‾‾
+
+τ ::=  ...| AIH(?)
+V ::=  ...| Hoja(M) | Bin(M, M) | case M of Hoja x ⤳ M； Bin(i, d) ⤳ M
+
+Regas Tipado
+————————————
+
+ 
+	Γ ⊢ M: τ
+	———————————————————— hoja n
+	Γ ⊢ Hoja (M): AIH(τ)
+
+
+	Γ ⊢ M₁: AIH(τ)    Γ ⊢ M₂:AIH(τ)
+	——————————————————————————————— bin
+	Γ ⊢ Bin(M₁，M₂): AIH(τ)
+
+
+	Γ ⊢ M₁∶AIH(τ)    Γ ⊢ M₂∶θ    Γ，i∶AIH(τ)，d∶AIH(τ) ⊢ M₃:θ
+	—————————————————————————————————————————————————————————— t-case
+	Γ ⊢ Case M₁ of Hoja x ⤳ M₂ ； Bin(i, d) ⤳  M₃:θ
