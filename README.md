@@ -1,2 +1,2 @@
-# PLP_UBA
-UBA - Paradigmas de la programacion
+# Paradigmas
+Paradigmas de la programacion

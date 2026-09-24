@@ -27,17 +27,33 @@ Reglas Congruencias
 
 	si M -> M',  N -> N'
  
-	(E-Cons-0)       M :: ˂M -> M' :: ˂N
+	(E-Cons-0)       M :: ˂N -> M' :: ˂N
 	(E-Cons-1)       V :: ˂N -> V  :: ˂N'
 	(E-head-0)       head˂(M) -> head˂(M')
 	(E-tail-0)       tail˂(M) -> tail˂(M')
 
 Semantica Operacional
 ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
-	C-head-0      head ˂( V::˂[]˂ₜ ) -> V 
-	C-head-1      head ˂( V₁::˂V₂::˂V₃ ) ->  if V₁ < V₂ then head˂( V₁::˂V₃ ) else head˂( V₂::˂V₃ )
-	C-tail-0      tail ˂( V::˂[]˂ₜ ) -> []˂ₜ
-	C-tail-1      tail ˂( V₁::˂V₂::˂V₃ ) ->  if V₁ < head˂( V₁::˂V₃ ) then V₂::˂V₃ else tail˂( V₂::˂V₃ )
+	(C-head-0)      head ˂( V::˂[]˂ₜ ) -> V 
+	(C-head-1)      head ˂( V₁::˂V₂::˂V₃ ) ->  if V₁ < V₂ then head˂( V₁::˂V₃ ) else head˂( V₂::˂V₃ )
+	(C-tail-0)      tail ˂( V::˂[]˂ₜ ) -> []˂ₜ
+	(C-tail-1)      tail ˂( V₁::˂V₂::˂V₃ ) ->  if V₁ < head˂( V₁::˂V₃ ) then V₂::˂V₃ else tail˂( V₂::˂V₃ )
+
+
+Ej Reduccion:
+‾‾‾‾‾‾‾‾‾‾‾‾‾
+reducir:  head˂((λx: Nat.2)zero::˂1::˂[]˂ₙₐₜ)
+
+head˂((λx: Nat.2)zero::˂1::˂[]˂ₙₐₜ) 
+
+(E-head-0 + E-const-0 + b)  ->  head˂(2::˂1::˂[]˂ₙₐₜ) 
+(C-head-1)                  ->  if 2 < 1 then head˂(2::˂[]˂ₙₐₜ) else head(1:: ˂[]˂ₙₐₜ)
+(E-if + E-<s )              ->  if 1 < zero then (2::˂[]˂ₙₐₜ)  else head(1:: ˂[]˂ₙₐₜ)   
+
+
+
+
+
 
 
 
